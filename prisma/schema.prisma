@@ -1,0 +1,62 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Chambre {
+  id            String        @id @default(cuid())
+  numero        String        @unique
+  description   String        @db.Text
+  prix          Float
+  disponible    Boolean       @default(true)
+  photo         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  reservations  Reservation[]
+
+  @@map("chambres")
+}
+
+model Reservation {
+  id            String   @id @default(cuid())
+  nom           String
+  email         String
+  telephone     String
+  chambreId     String
+  chambre       Chambre  @relation(fields: [chambreId], references: [id])
+  dateArrivee   DateTime
+  dateDepart    DateTime
+  statut        String   @default("en_attente") // en_attente, confirmee, en_cours, terminee, annulee
+  montantTotal  Float
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("reservations")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  nom       String
+  role      String   @default("admin")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Piscine {
+  id          String   @id @default(cuid())
+  horaires    String   @db.Text
+  reglement   String   @db.Text
+  description String   @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("piscine")
+}

@@ -1,36 +1,181 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Karibotel - Application de Réservation d'Hôtel
 
-## Getting Started
+Application fullstack Next.js pour la gestion des réservations en ligne de l'hôtel Karibotel.
 
-First, run the development server:
+## 🚀 Fonctionnalités
+
+- ✅ Gestion des chambres (B01 à B14)
+- ✅ Système de réservation en ligne
+- ✅ Vérification automatique de disponibilité
+- ✅ Envoi d'emails de confirmation
+- ✅ Section piscine avec horaires et règlement
+- ✅ Dashboard administrateur sécurisé
+- ✅ Statistiques et gestion des réservations
+- ✅ Design moderne avec thème vert nature
+
+## 🛠️ Technologies
+
+- **Framework**: Next.js 14 (App Router)
+- **Base de données**: MySQL avec Prisma ORM
+- **Authentification**: NextAuth.js
+- **Styling**: Tailwind CSS
+- **Email**: Nodemailer
+- **Icons**: React Icons
+
+## 📦 Installation
+
+1. Cloner le projet et installer les dépendances:
+
+```bash
+cd karibotel
+npm install
+```
+
+2. Configurer les variables d'environnement:
+
+Créer un fichier `.env` à la racine du projet:
+
+```env
+DATABASE_URL="mysql://user:password@localhost:3306/karibotel"
+NEXTAUTH_SECRET="votre-secret-genere"
+NEXTAUTH_URL="http://localhost:3000"
+
+# Configuration email
+EMAIL_HOST="smtp.gmail.com"
+EMAIL_PORT="587"
+EMAIL_USER="votre-email@gmail.com"
+EMAIL_PASSWORD="votre-mot-de-passe-app"
+EMAIL_FROM="Karibotel <noreply@karibotel.com>"
+```
+
+Pour générer NEXTAUTH_SECRET:
+```bash
+openssl rand -base64 32
+```
+
+3. Configurer la base de données:
+
+```bash
+# Générer le client Prisma
+npm run prisma:generate
+
+# Créer les tables
+npm run prisma:migrate
+
+# Initialiser les données (chambres + admin)
+npm run prisma:seed
+```
+
+## 🚀 Démarrage
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+L'application sera accessible sur [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 👤 Compte Admin par défaut
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Email**: admin@karibotel.com
+- **Mot de passe**: admin123
 
-## Learn More
+⚠️ **Important**: Changez ces identifiants en production !
 
-To learn more about Next.js, take a look at the following resources:
+## 📁 Structure du projet
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+karibotel/
+├── app/
+│   ├── api/              # API Routes
+│   │   ├── auth/         # NextAuth
+│   │   ├── chambres/     # Gestion chambres
+│   │   ├── reservations/ # Gestion réservations
+│   │   └── piscine/      # Infos piscine
+│   ├── chambres/         # Page liste chambres
+│   ├── piscine/          # Page piscine
+│   ├── reserver/         # Formulaire réservation
+│   ├── dashboard/        # Admin dashboard
+│   ├── login/            # Page connexion
+│   └── contact/          # Page contact
+├── components/           # Composants réutilisables
+├── lib/                  # Utilitaires
+│   ├── prisma.ts        # Client Prisma
+│   ├── auth.ts          # Configuration NextAuth
+│   └── email.ts         # Service email
+├── prisma/
+│   ├── schema.prisma    # Schéma base de données
+│   └── seed.ts          # Données initiales
+└── types/               # Types TypeScript
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🎨 Thème
 
-## Deploy on Vercel
+Le design utilise une palette de couleurs vertes inspirée de la nature:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Couleur principale: `#2E7D32`
+- Couleur claire: `#4CAF50`
+- Couleur foncée: `#1B5E20`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📧 Configuration Email
+
+Pour Gmail, vous devez:
+1. Activer l'authentification à deux facteurs
+2. Générer un mot de passe d'application
+3. Utiliser ce mot de passe dans `EMAIL_PASSWORD`
+
+## 🗄️ Base de données
+
+Le schéma inclut:
+- **Chambres**: Numéro, description, prix, disponibilité
+- **Réservations**: Client, dates, statut, montant
+- **Users**: Administrateurs
+- **Piscine**: Horaires, règlement, description
+
+## 🔒 Sécurité
+
+- Authentification sécurisée avec NextAuth
+- Mots de passe hashés avec bcrypt
+- Protection des routes admin
+- Validation des données côté serveur
+
+## 🚀 Déploiement
+
+### Vercel (Recommandé)
+
+1. Pusher le code sur GitHub
+2. Importer le projet sur Vercel
+3. Configurer les variables d'environnement
+4. Déployer
+
+### cPanel
+
+1. Builder le projet: `npm run build`
+2. Uploader les fichiers sur le serveur
+3. Configurer Node.js sur cPanel
+4. Configurer les variables d'environnement
+5. Démarrer: `npm start`
+
+## 📝 API Endpoints
+
+- `GET /api/chambres` - Liste des chambres
+- `POST /api/chambres` - Créer une chambre
+- `GET /api/chambres/[id]` - Détails d'une chambre
+- `PUT /api/chambres/[id]` - Modifier une chambre
+- `DELETE /api/chambres/[id]` - Supprimer une chambre
+- `GET /api/reservations` - Liste des réservations
+- `POST /api/reservations` - Créer une réservation
+- `GET /api/piscine` - Infos piscine
+- `PUT /api/piscine` - Modifier infos piscine
+
+## 🎯 Prochaines étapes
+
+- [ ] Upload d'images pour les chambres
+- [ ] Système de paiement en ligne
+- [ ] Notifications push
+- [ ] Export des réservations en PDF
+- [ ] Multi-langue (FR/EN)
+- [ ] Système d'avis clients
+
+## 📄 Licence
+
+Projet privé - Tous droits réservés © Karibotel
