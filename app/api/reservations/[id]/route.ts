@@ -3,12 +3,12 @@ import { prisma } from '@/lib/prisma'
 
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params
+    const params = await context.params
     await prisma.reservation.delete({
-      where: { id },
+      where: { id: params.id },
     })
 
     return NextResponse.json({ message: 'Réservation supprimée' })
@@ -20,15 +20,15 @@ export async function DELETE(
 
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params
+    const params = await context.params
     const body = await request.json()
     const { statut } = body
 
     const reservation = await prisma.reservation.update({
-      where: { id },
+      where: { id: params.id },
       data: { statut },
     })
 
