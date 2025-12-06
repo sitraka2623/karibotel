@@ -160,3 +160,64 @@ button[aria-label*="next-auth"],
 .stagger-item:nth-child(4) { animation-delay: 0.4s; }
 .stagger-item:nth-child(5) { animation-delay: 0.5s; }
 .stagger-item:nth-child(6) { animation-delay: 0.6s; }
+
+/* Styles responsive pour le dashboard */
+@media (max-width: 1024px) {
+  /* Empêcher le scroll horizontal sur mobile */
+  body {
+    overflow-x: hidden;
+  }
+  
+  /* Ajuster les cartes sur tablette */
+  .dashboard-card {
+    margin-bottom: 1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Réduire les paddings sur mobile */
+  .dashboard-content {
+    padding: 1rem;
+  }
+  
+  /* Empiler les grilles sur mobile */
+  .grid-responsive {
+    grid-template-columns: 1fr !important;
+  }
+  
+  /* Textes plus petits sur mobile */
+  h1 {
+    font-size: 1.5rem;
+  }
+  
+  h2 {
+    font-size: 1.25rem;
+  }
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Améliorer la lisibilité sur petits écrans */
+@media (max-width: 768px) {
+  .text-responsive {
+    font-size: 0.875rem;
+  }
+  
+  .button-responsive {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* Transitions fluides pour la sidebar */
+.sidebar-transition {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Overlay backdrop blur */
+.backdrop-blur-custom {
+  backdrop-filter: blur(4px);
+}

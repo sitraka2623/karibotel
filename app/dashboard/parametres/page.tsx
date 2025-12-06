@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import { FaSave, FaHotel, FaEnvelope, FaPhone, FaMapMarkerAlt, FaClock } from 'react-icons/fa'
+import { FaSave, FaHotel, FaEnvelope, FaPhone, FaMapMarkerAlt, FaClock, FaUser, FaLock } from 'react-icons/fa'
 
 interface Settings {
   hotelName: string
@@ -31,6 +31,13 @@ export default function ParametresPage() {
   })
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
+  
+  // États pour le changement de mot de passe
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [passwordMessage, setPasswordMessage] = useState('')
+  const [passwordLoading, setPasswordLoading] = useState(false)
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -50,6 +57,51 @@ export default function ParametresPage() {
       setMessage('✅ Paramètres enregistrés avec succès')
       setTimeout(() => setMessage(''), 3000)
     }, 1000)
+  }
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setPasswordMessage('')
+
+    // Validation
+    if (newPassword.length < 6) {
+      setPasswordMessage('❌ Le mot de passe doit contenir au moins 6 caractères')
+      return
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPasswordMessage('❌ Les mots de passe ne correspondent pas')
+      return
+    }
+
+    setPasswordLoading(true)
+
+    try {
+      const res = await fetch('/api/auth/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          currentPassword,
+          newPassword,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        setPasswordMessage('✅ Mot de passe modifié avec succès')
+        setCurrentPassword('')
+        setNewPassword('')
+        setConfirmPassword('')
+        setTimeout(() => setPasswordMessage(''), 5000)
+      } else {
+        setPasswordMessage(`❌ ${data.error || 'Erreur lors de la modification'}`)
+      }
+    } catch (error) {
+      setPasswordMessage('❌ Erreur de connexion au serveur')
+    } finally {
+      setPasswordLoading(false)
+    }
   }
 
   if (status === 'loading') {
@@ -205,18 +257,104 @@ export default function ParametresPage() {
             </div>
           </div>
 
-          {/* Configuration Email */}
-          <div className="bg-blue-50 rounded-lg p-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">Configuration Email</h2>
-            <p className="text-gray-600 mb-4">
-              Pour configurer l'envoi d'emails automatiques, consultez le fichier <code className="bg-white px-2 py-1 rounded">.env</code>
+          {/* Modification Information de Connexion */}
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border-2 border-blue-200">
+            <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <FaUser className="text-blue-600" />
+              Modification Information de Connexion
+            </h2>
+            <p className="text-gray-700 mb-6">
+              Gérez vos identifiants de connexion au dashboard administrateur
             </p>
-            <div className="space-y-2 text-sm text-gray-700">
-              <p>• <strong>SMTP_HOST</strong> : Serveur SMTP (ex: smtp.gmail.com)</p>
-              <p>• <strong>SMTP_PORT</strong> : Port SMTP (ex: 587)</p>
-              <p>• <strong>SMTP_USER</strong> : Votre email</p>
-              <p>• <strong>SMTP_PASS</strong> : Mot de passe d'application</p>
-            </div>
+
+            {passwordMessage && (
+              <div className={`mb-4 p-4 rounded-lg ${
+                passwordMessage.includes('✅') 
+                  ? 'bg-green-100 text-green-800 border border-green-300' 
+                  : 'bg-red-100 text-red-800 border border-red-300'
+              }`}>
+                {passwordMessage}
+              </div>
+            )}
+            
+            <form onSubmit={handlePasswordChange} className="space-y-4">
+              <div>
+                <label className="block text-gray-700 font-semibold mb-2">
+                  Email de connexion actuel
+                </label>
+                <input
+                  type="email"
+                  value={session?.user?.email || ''}
+                  disabled
+                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-600 cursor-not-allowed"
+                />
+                <p className="text-sm text-gray-500 mt-1">
+                  Votre email de connexion actuel
+                </p>
+              </div>
+
+              <div className="pt-4 border-t border-blue-200">
+                <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                  <FaLock className="text-blue-600" />
+                  Changer le mot de passe
+                </h3>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-gray-700 font-semibold mb-2">
+                      Mot de passe actuel
+                    </label>
+                    <input
+                      type="password"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Entrez votre mot de passe actuel"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-gray-700 font-semibold mb-2">
+                      Nouveau mot de passe
+                    </label>
+                    <input
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Minimum 6 caractères"
+                      required
+                      minLength={6}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-gray-700 font-semibold mb-2">
+                      Confirmer le nouveau mot de passe
+                    </label>
+                    <input
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Retapez le nouveau mot de passe"
+                      required
+                      minLength={6}
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={passwordLoading}
+                    className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    <FaSave />
+                    {passwordLoading ? 'Modification en cours...' : 'Modifier le mot de passe'}
+                  </button>
+                </div>
+              </div>
+            </form>
           </div>
 
           {/* Bouton de sauvegarde */}
@@ -231,6 +369,81 @@ export default function ParametresPage() {
             </button>
           </div>
         </form>
+      </div>
+
+      {/* Configuration Email SMTP */}
+      <div className="mt-6 bg-white rounded-xl shadow-lg p-6">
+        <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+          <FaEnvelope className="text-primary" />
+          Configuration Email SMTP
+        </h2>
+        <p className="text-gray-600 mb-6">
+          Configurez l'envoi automatique d'emails de confirmation aux clients
+        </p>
+        
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border-2 border-blue-200">
+          <h3 className="font-bold text-gray-800 mb-4">Variables d'environnement (.env)</h3>
+          
+          <div className="space-y-4">
+            <div className="bg-white rounded-lg p-4 border border-gray-200">
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-mono text-sm font-semibold text-gray-700">SMTP_HOST</span>
+                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Requis</span>
+              </div>
+              <p className="text-sm text-gray-600">Serveur SMTP (ex: smtp.gmail.com)</p>
+            </div>
+
+            <div className="bg-white rounded-lg p-4 border border-gray-200">
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-mono text-sm font-semibold text-gray-700">SMTP_PORT</span>
+                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Requis</span>
+              </div>
+              <p className="text-sm text-gray-600">Port SMTP (ex: 587 pour TLS, 465 pour SSL)</p>
+            </div>
+
+            <div className="bg-white rounded-lg p-4 border border-gray-200">
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-mono text-sm font-semibold text-gray-700">SMTP_USER</span>
+                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Requis</span>
+              </div>
+              <p className="text-sm text-gray-600">Votre adresse email complète</p>
+            </div>
+
+            <div className="bg-white rounded-lg p-4 border border-gray-200">
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-mono text-sm font-semibold text-gray-700">SMTP_PASS</span>
+                <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">Sensible</span>
+              </div>
+              <p className="text-sm text-gray-600">Mot de passe d'application (pas votre mot de passe principal)</p>
+            </div>
+
+            <div className="bg-white rounded-lg p-4 border border-gray-200">
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-mono text-sm font-semibold text-gray-700">EMAIL_FROM</span>
+                <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Optionnel</span>
+              </div>
+              <p className="text-sm text-gray-600">Nom d'affichage (ex: "Karibotel &lt;noreply@karibotel.com&gt;")</p>
+            </div>
+          </div>
+
+          <div className="mt-6 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
+            <div className="flex items-start gap-3">
+              <div className="text-yellow-600 text-xl">💡</div>
+              <div>
+                <p className="font-semibold text-yellow-800 mb-2">Guide de configuration Gmail</p>
+                <ol className="text-sm text-yellow-700 space-y-1 list-decimal list-inside">
+                  <li>Activez la validation en 2 étapes sur votre compte Google</li>
+                  <li>Allez dans "Mots de passe d'application"</li>
+                  <li>Créez un nouveau mot de passe pour "Autre (nom personnalisé)"</li>
+                  <li>Utilisez ce mot de passe dans SMTP_PASS</li>
+                </ol>
+                <p className="text-xs text-yellow-600 mt-2">
+                  Consultez <code className="bg-yellow-100 px-2 py-1 rounded">CONFIGURATION_EMAIL.md</code> pour plus de détails
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Informations système */}

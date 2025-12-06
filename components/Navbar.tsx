@@ -21,7 +21,6 @@ export default function Navbar() {
   const links = [
     { href: '/', label: 'Accueil', icon: '🏠' },
     { href: '/chambres', label: 'Chambres', icon: '🛏️' },
-    { href: '/piscine', label: 'Piscine', icon: '🏊' },
     { href: '/reserver', label: 'Réserver', icon: '📅' },
     { href: '/contact', label: 'Contact', icon: '📞' },
   ]

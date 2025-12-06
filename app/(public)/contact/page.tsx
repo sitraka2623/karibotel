@@ -12,13 +12,28 @@ export default function ContactPage() {
           <div className="bg-white rounded-xl shadow-lg p-6 text-center">
             <FaPhone className="text-4xl text-primary mx-auto mb-4" />
             <h3 className="text-xl font-bold mb-2">Téléphone</h3>
-            <p className="text-gray-600">+261 34 XX XXX XX</p>
+            <div className="space-y-2">
+              <p className="text-gray-600">
+                <a href="tel:+261342260667" className="hover:text-primary transition-colors">
+                  +261 34 22 606 67
+                </a>
+              </p>
+              <p className="text-gray-600">
+                <a href="tel:+261325520699" className="hover:text-primary transition-colors">
+                  +261 32 55 206 99
+                </a>
+              </p>
+            </div>
           </div>
 
           <div className="bg-white rounded-xl shadow-lg p-6 text-center">
             <FaEnvelope className="text-4xl text-primary mx-auto mb-4" />
             <h3 className="text-xl font-bold mb-2">Email</h3>
-            <p className="text-gray-600">contact@karibotel.mg</p>
+            <p className="text-gray-600">
+              <a href="mailto:contact@karibotel.mg" className="hover:text-primary transition-colors">
+                contact@karibotel.mg
+              </a>
+            </p>
           </div>
 
           <div className="bg-white rounded-xl shadow-lg p-6 text-center">
