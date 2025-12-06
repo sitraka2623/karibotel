@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 
 interface Chambre {
@@ -9,7 +9,7 @@ interface Chambre {
   prix: number
 }
 
-export default function ReserverPage() {
+function ReserverForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [chambres, setChambres] = useState<Chambre[]>([])
@@ -175,5 +175,13 @@ export default function ReserverPage() {
         </form>
       </div>
     </main>
+  )
+}
+
+export default function ReserverPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Chargement...</div>}>
+      <ReserverForm />
+    </Suspense>
   )
 }
