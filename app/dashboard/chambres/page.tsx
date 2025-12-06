@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { FaEdit, FaTrash, FaPlus, FaArrowLeft } from 'react-icons/fa'
+import { FaEdit, FaTrash, FaPlus, FaArrowLeft, FaCalendar } from 'react-icons/fa'
 
 interface Chambre {
   id: string
@@ -16,6 +16,17 @@ interface Chambre {
   photo?: string
 }
 
+interface Reservation {
+  id: string
+  nom: string
+  email: string
+  telephone: string
+  dateArrivee: string
+  dateDepart: string
+  statut: string
+  montantTotal: number
+}
+
 export default function GestionChambresPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
@@ -24,6 +35,10 @@ export default function GestionChambresPage() {
   const [saving, setSaving] = useState(false)
   const [editingChambre, setEditingChambre] = useState<Chambre | null>(null)
   const [showModal, setShowModal] = useState(false)
+  const [showPlanningModal, setShowPlanningModal] = useState(false)
+  const [selectedChambre, setSelectedChambre] = useState<Chambre | null>(null)
+  const [reservations, setReservations] = useState<Reservation[]>([])
+  const [loadingReservations, setLoadingReservations] = useState(false)
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -53,6 +68,50 @@ export default function GestionChambresPage() {
   const handleEdit = (chambre: Chambre) => {
     setEditingChambre(chambre)
     setShowModal(true)
+  }
+
+  const handleViewPlanning = async (chambre: Chambre) => {
+    setSelectedChambre(chambre)
+    setShowPlanningModal(true)
+    setLoadingReservations(true)
+
+    try {
+      const res = await fetch('/api/reservations')
+      const data = await res.json()
+      
+      // Filtrer les réservations pour cette chambre
+      const chambreReservations = data.filter(
+        (r: Reservation & { chambreId: string }) => r.chambreId === chambre.id
+      )
+      setReservations(chambreReservations)
+    } catch (error) {
+      console.error('Erreur:', error)
+    } finally {
+      setLoadingReservations(false)
+    }
+  }
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('fr-FR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    })
+  }
+
+  const getStatutColor = (statut: string) => {
+    switch (statut) {
+      case 'confirmee':
+        return 'bg-green-100 text-green-800'
+      case 'en_cours':
+        return 'bg-blue-100 text-blue-800'
+      case 'terminee':
+        return 'bg-gray-100 text-gray-800'
+      case 'annulee':
+        return 'bg-red-100 text-red-800'
+      default:
+        return 'bg-yellow-100 text-yellow-800'
+    }
   }
 
   const handleDelete = async (id: string) => {
@@ -163,6 +222,12 @@ export default function GestionChambresPage() {
 
                 <div className="flex gap-2">
                   <button
+                    onClick={() => handleViewPlanning(chambre)}
+                    className="flex-1 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <FaCalendar /> Planning
+                  </button>
+                  <button
                     onClick={() => handleEdit(chambre)}
                     className="flex-1 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors flex items-center justify-center gap-2"
                   >
@@ -179,6 +244,106 @@ export default function GestionChambresPage() {
             </div>
           ))}
         </div>
+
+        {/* Modal Planning */}
+        {showPlanningModal && selectedChambre && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-3xl font-bold text-primary">
+                  Planning - Chambre {selectedChambre.numero}
+                </h2>
+                <button
+                  onClick={() => {
+                    setShowPlanningModal(false)
+                    setSelectedChambre(null)
+                    setReservations([])
+                  }}
+                  className="text-gray-500 hover:text-gray-700 text-2xl"
+                >
+                  ×
+                </button>
+              </div>
+
+              {loadingReservations ? (
+                <div className="text-center py-8">
+                  <div className="text-xl text-gray-600">Chargement...</div>
+                </div>
+              ) : reservations.length === 0 ? (
+                <div className="text-center py-8">
+                  <FaCalendar className="text-6xl text-gray-300 mx-auto mb-4" />
+                  <p className="text-xl text-gray-600">
+                    Aucune réservation pour cette chambre
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {reservations.map((reservation) => (
+                    <div
+                      key={reservation.id}
+                      className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                    >
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <h3 className="text-lg font-bold text-gray-800">
+                            {reservation.nom}
+                          </h3>
+                          <p className="text-sm text-gray-600">
+                            {reservation.email}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {reservation.telephone}
+                          </p>
+                        </div>
+                        <span
+                          className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatutColor(
+                            reservation.statut
+                          )}`}
+                        >
+                          {reservation.statut.replace('_', ' ')}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4 mb-3">
+                        <div>
+                          <p className="text-sm text-gray-500">Arrivée</p>
+                          <p className="font-semibold text-gray-800">
+                            {formatDate(reservation.dateArrivee)}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-500">Départ</p>
+                          <p className="font-semibold text-gray-800">
+                            {formatDate(reservation.dateDepart)}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="text-right">
+                        <p className="text-lg font-bold text-primary">
+                          {reservation.montantTotal.toLocaleString()} Ar
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="mt-6">
+                <button
+                  onClick={() => {
+                    setShowPlanningModal(false)
+                    setSelectedChambre(null)
+                    setReservations([])
+                  }}
+                  className="w-full bg-gray-300 text-gray-800 py-3 rounded-lg font-semibold hover:bg-gray-400 transition-colors"
+                >
+                  Fermer
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Modal de modification */}
         {showModal && editingChambre && (
