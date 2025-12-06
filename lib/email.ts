@@ -53,3 +53,22 @@ export async function sendReservationEmail(
 
   await transporter.sendMail(mailOptions)
 }
+
+export async function sendEmail({
+  to,
+  subject,
+  html,
+}: {
+  to: string
+  subject: string
+  html: string
+}) {
+  const mailOptions = {
+    from: process.env.EMAIL_FROM,
+    to,
+    subject,
+    html,
+  }
+
+  await transporter.sendMail(mailOptions)
+}
