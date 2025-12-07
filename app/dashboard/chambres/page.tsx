@@ -39,6 +39,12 @@ export default function GestionChambresPage() {
   const [selectedChambre, setSelectedChambre] = useState<Chambre | null>(null)
   const [reservations, setReservations] = useState<Reservation[]>([])
   const [loadingReservations, setLoadingReservations] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [chambreToDelete, setChambreToDelete] = useState<string | null>(null)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [successMessage, setSuccessMessage] = useState('')
+  const [showErrorModal, setShowErrorModal] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -114,20 +120,31 @@ export default function GestionChambresPage() {
     }
   }
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer cette chambre ?')) return
+  const handleDelete = (id: string) => {
+    setChambreToDelete(id)
+    setShowDeleteModal(true)
+  }
+
+  const confirmDelete = async () => {
+    if (!chambreToDelete) return
 
     try {
-      const res = await fetch(`/api/chambres/${id}`, {
+      const res = await fetch(`/api/chambres/${chambreToDelete}`, {
         method: 'DELETE',
       })
 
       if (res.ok) {
         loadChambres()
-        alert('Chambre supprimée avec succès')
+        setShowDeleteModal(false)
+        setChambreToDelete(null)
+        setSuccessMessage('Chambre supprimée avec succès')
+        setShowSuccessModal(true)
+        setTimeout(() => setShowSuccessModal(false), 3000)
       }
     } catch (error) {
-      alert('Erreur lors de la suppression')
+      setShowDeleteModal(false)
+      setErrorMessage('Erreur lors de la suppression')
+      setShowErrorModal(true)
     }
   }
 
@@ -154,14 +171,18 @@ export default function GestionChambresPage() {
         await loadChambres()
         setShowModal(false)
         setEditingChambre(null)
-        alert('✅ Chambre mise à jour avec succès')
+        setSuccessMessage('Chambre mise à jour avec succès')
+        setShowSuccessModal(true)
+        setTimeout(() => setShowSuccessModal(false), 3000)
       } else {
         console.error('Erreur API:', data)
-        alert(`❌ Erreur: ${data.error || 'Erreur lors de la mise à jour'}`)
+        setErrorMessage(data.error || 'Erreur lors de la mise à jour')
+        setShowErrorModal(true)
       }
     } catch (error) {
       console.error('Erreur:', error)
-      alert('❌ Erreur lors de la mise à jour')
+      setErrorMessage('Erreur lors de la mise à jour')
+      setShowErrorModal(true)
     } finally {
       setSaving(false)
     }
@@ -440,6 +461,80 @@ export default function GestionChambresPage() {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* Modal Confirmation Suppression */}
+        {showDeleteModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl">
+              <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <FaTrash className="text-4xl text-red-500" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-800 mb-2 text-center">
+                Confirmer la suppression
+              </h3>
+              <p className="text-gray-600 mb-6 text-center">
+                Êtes-vous sûr de vouloir supprimer cette chambre ? Cette action est irréversible.
+              </p>
+              <div className="flex gap-4">
+                <button
+                  onClick={() => {
+                    setShowDeleteModal(false)
+                    setChambreToDelete(null)
+                  }}
+                  className="flex-1 bg-gray-300 text-gray-800 px-6 py-3 rounded-lg font-semibold hover:bg-gray-400 transition-colors"
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={confirmDelete}
+                  className="flex-1 bg-red-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-600 transition-colors"
+                >
+                  Supprimer
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal Succès */}
+        {showSuccessModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl p-8 max-w-md w-full text-center shadow-2xl">
+              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-5xl">✓</span>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                Succès !
+              </h3>
+              <p className="text-gray-600">
+                {successMessage}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Modal Erreur */}
+        {showErrorModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl p-8 max-w-md w-full text-center shadow-2xl">
+              <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-5xl">✕</span>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                Erreur
+              </h3>
+              <p className="text-gray-600 mb-6">
+                {errorMessage}
+              </p>
+              <button
+                onClick={() => setShowErrorModal(false)}
+                className="bg-primary text-white px-8 py-3 rounded-lg font-semibold hover:bg-primary-dark transition-colors"
+              >
+                Fermer
+              </button>
             </div>
           </div>
         )}
