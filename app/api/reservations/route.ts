@@ -37,8 +37,25 @@ export async function POST(request: Request) {
     })
 
     if (conflits.length > 0) {
+      const periodesReservees = conflits.map((c) => ({
+        du: new Date(c.dateArrivee).toLocaleDateString('fr-FR', {
+          day: '2-digit',
+          month: 'long',
+          year: 'numeric',
+        }),
+        au: new Date(c.dateDepart).toLocaleDateString('fr-FR', {
+          day: '2-digit',
+          month: 'long',
+          year: 'numeric',
+        }),
+      }))
+
       return NextResponse.json(
-        { error: 'La chambre n\'est pas disponible pour ces dates' },
+        {
+          error: 'Chambre non disponible',
+          message: 'Cette chambre est déjà réservée pour les périodes suivantes',
+          periodesReservees,
+        },
         { status: 400 }
       )
     }

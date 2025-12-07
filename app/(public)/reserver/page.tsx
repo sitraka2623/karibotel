@@ -20,6 +20,9 @@ function ReserverForm() {
   const [success, setSuccess] = useState(false)
   const [showErrorModal, setShowErrorModal] = useState(false)
   const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [periodesReservees, setPeriodesReservees] = useState<
+    Array<{ du: string; au: string }>
+  >([])
 
   const [formData, setFormData] = useState({
     nom: '',
@@ -51,14 +54,18 @@ function ReserverForm() {
       const data = await res.json()
 
       if (!res.ok) {
-        throw new Error(data.error || 'Erreur lors de la réservation')
+        setError(data.message || data.error || 'Erreur lors de la réservation')
+        setPeriodesReservees(data.periodesReservees || [])
+        setShowErrorModal(true)
+        setLoading(false)
+        return
       }
 
       setSuccess(true)
       setShowSuccessModal(true)
       setTimeout(() => router.push('/confirmation'), 3000)
     } catch (err: any) {
-      setError(err.message)
+      setError('Une erreur est survenue lors de la réservation')
       setShowErrorModal(true)
     } finally {
       setLoading(false)
@@ -310,21 +317,51 @@ function ReserverForm() {
       {/* Modal Erreur */}
       {showErrorModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-8 max-w-md w-full text-center shadow-2xl">
-            <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-5xl">✕</span>
+          <div className="bg-white rounded-2xl p-8 max-w-lg w-full shadow-2xl">
+            <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-5xl">📅</span>
             </div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">
-              Oups ! Une erreur est survenue
+            <h3 className="text-2xl font-bold text-gray-800 mb-2 text-center">
+              Désolé, chambre non disponible
             </h3>
-            <p className="text-gray-600 mb-6">
+            <p className="text-gray-600 mb-4 text-center">
               {error}
             </p>
+
+            {periodesReservees.length > 0 && (
+              <div className="bg-orange-50 rounded-lg p-4 mb-6">
+                <h4 className="font-bold text-gray-800 mb-3 text-center">
+                  Périodes déjà réservées :
+                </h4>
+                <div className="space-y-2">
+                  {periodesReservees.map((periode, index) => (
+                    <div
+                      key={index}
+                      className="bg-white rounded-lg p-3 text-center border border-orange-200"
+                    >
+                      <p className="text-gray-700">
+                        <span className="font-semibold">Du</span> {periode.du}
+                      </p>
+                      <p className="text-gray-700">
+                        <span className="font-semibold">Au</span> {periode.au}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-sm text-gray-600 mt-4 text-center">
+                  💡 Veuillez choisir d'autres dates pour cette chambre
+                </p>
+              </div>
+            )}
+
             <button
-              onClick={() => setShowErrorModal(false)}
-              className="bg-primary text-white px-8 py-3 rounded-lg font-semibold hover:bg-primary-dark transition-colors"
+              onClick={() => {
+                setShowErrorModal(false)
+                setPeriodesReservees([])
+              }}
+              className="w-full bg-primary text-white px-8 py-3 rounded-lg font-semibold hover:bg-primary-dark transition-colors"
             >
-              Réessayer
+              Choisir d'autres dates
             </button>
           </div>
         </div>
