@@ -9,6 +9,7 @@ interface Chambre {
   numero: string
   prix: number
   description?: string
+  disponible?: boolean
 }
 
 function ReserverForm() {
