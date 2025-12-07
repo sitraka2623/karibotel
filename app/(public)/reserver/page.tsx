@@ -18,6 +18,8 @@ function ReserverForm() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+  const [showErrorModal, setShowErrorModal] = useState(false)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
 
   const [formData, setFormData] = useState({
     nom: '',
@@ -53,9 +55,11 @@ function ReserverForm() {
       }
 
       setSuccess(true)
-      setTimeout(() => router.push('/confirmation'), 2000)
+      setShowSuccessModal(true)
+      setTimeout(() => router.push('/confirmation'), 3000)
     } catch (err: any) {
       setError(err.message)
+      setShowErrorModal(true)
     } finally {
       setLoading(false)
     }
@@ -173,17 +177,7 @@ function ReserverForm() {
               Informations de réservation
             </h2>
 
-            {success && (
-          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-            Réservation confirmée ! Redirection...
-          </div>
-        )}
 
-            {error && (
-              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-                {error}
-              </div>
-            )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
           <div className="mb-6">
@@ -291,6 +285,50 @@ function ReserverForm() {
           </div>
         </div>
       </div>
+
+      {/* Modal Succès */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-8 max-w-md w-full text-center animate-bounce-in shadow-2xl">
+            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-5xl">✓</span>
+            </div>
+            <h3 className="text-2xl font-bold text-gray-800 mb-2">
+              Réservation confirmée !
+            </h3>
+            <p className="text-gray-600 mb-6">
+              Votre réservation a été enregistrée avec succès. Un email de confirmation vous a été envoyé.
+            </p>
+            <div className="flex items-center justify-center gap-2 text-primary">
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
+              <span>Redirection en cours...</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Erreur */}
+      {showErrorModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-8 max-w-md w-full text-center shadow-2xl">
+            <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-5xl">✕</span>
+            </div>
+            <h3 className="text-2xl font-bold text-gray-800 mb-2">
+              Oups ! Une erreur est survenue
+            </h3>
+            <p className="text-gray-600 mb-6">
+              {error}
+            </p>
+            <button
+              onClick={() => setShowErrorModal(false)}
+              className="bg-primary text-white px-8 py-3 rounded-lg font-semibold hover:bg-primary-dark transition-colors"
+            >
+              Réessayer
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Section Pourquoi nous choisir */}
       <div className="max-w-6xl mx-auto mt-16">
