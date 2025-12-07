@@ -2,11 +2,13 @@
 
 import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import Image from 'next/image'
 
 interface Chambre {
   id: string
   numero: string
   prix: number
+  description?: string
 }
 
 function ReserverForm() {
@@ -59,26 +61,131 @@ function ReserverForm() {
     }
   }
 
-  return (
-    <main className="min-h-screen bg-gray-50 py-8 sm:py-12 px-4">
-      <div className="max-w-2xl mx-auto">
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary mb-6 sm:mb-8 text-center">
-          Réserver une chambre
-        </h1>
+  const selectedChambre = chambres.find((c) => c.id === formData.chambreId)
 
-        {success && (
+  return (
+    <main className="min-h-screen bg-gradient-to-b from-nature-50 to-white py-8 sm:py-12 px-4">
+      {/* Hero Section */}
+      <div className="max-w-6xl mx-auto mb-12">
+        <div className="relative h-64 md:h-96 rounded-2xl overflow-hidden shadow-2xl mb-8">
+          <img
+            src="/image/VUE.jpg"
+            alt="Karibotel"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end">
+            <div className="p-8 text-white">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-2">
+                Réservez votre séjour
+              </h1>
+              <p className="text-lg md:text-xl">
+                Au cœur de la nature, à Ranomafana
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-6xl mx-auto grid lg:grid-cols-3 gap-8">
+        {/* Sidebar - Informations */}
+        <div className="lg:col-span-1 space-y-6">
+          {/* Chambre sélectionnée */}
+          {selectedChambre && (
+            <div className="bg-white rounded-xl shadow-lg p-6">
+              <h3 className="text-xl font-bold text-primary mb-4">
+                Chambre sélectionnée
+              </h3>
+              <div className="relative h-40 rounded-lg overflow-hidden mb-4">
+                <img
+                  src={`/image/CHAMBRE${(parseInt(selectedChambre.numero.slice(1)) % 7) + 1}.jpg`}
+                  alt={`Chambre ${selectedChambre.numero}`}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <h4 className="text-lg font-bold mb-2">
+                Chambre {selectedChambre.numero}
+              </h4>
+              <p className="text-2xl font-bold text-primary">
+                {selectedChambre.prix.toLocaleString()} Ar
+                <span className="text-sm text-gray-500">/nuit</span>
+              </p>
+            </div>
+          )}
+
+          {/* Avantages */}
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            <h3 className="text-xl font-bold text-primary mb-4">
+              Inclus dans votre séjour
+            </h3>
+            <ul className="space-y-3">
+              <li className="flex items-start gap-3">
+                <span className="text-green-500 text-xl">✓</span>
+                <span className="text-gray-700">
+                  Accès gratuit à la piscine
+                </span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-green-500 text-xl">✓</span>
+                <span className="text-gray-700">WiFi gratuit</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-green-500 text-xl">✓</span>
+                <span className="text-gray-700">Petit-déjeuner inclus</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-green-500 text-xl">✓</span>
+                <span className="text-gray-700">Vue panoramique</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="text-green-500 text-xl">✓</span>
+                <span className="text-gray-700">Parking gratuit</span>
+              </li>
+            </ul>
+          </div>
+
+          {/* Contact */}
+          <div className="bg-gradient-to-br from-primary to-primary-dark rounded-xl shadow-lg p-6 text-white">
+            <h3 className="text-xl font-bold mb-4">Besoin d'aide ?</h3>
+            <p className="mb-4">
+              Notre équipe est à votre disposition pour toute question
+            </p>
+            <div className="space-y-2">
+              <a
+                href="tel:+261342260667"
+                className="block hover:underline font-semibold"
+              >
+                📞 +261 34 22 606 67
+              </a>
+              <a
+                href="tel:+261325520699"
+                className="block hover:underline font-semibold"
+              >
+                📞 +261 32 55 206 99
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {/* Formulaire */}
+        <div className="lg:col-span-2">
+          <div className="bg-white rounded-xl shadow-lg p-8">
+            <h2 className="text-2xl font-bold text-primary mb-6">
+              Informations de réservation
+            </h2>
+
+            {success && (
           <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
             Réservation confirmée ! Redirection...
           </div>
         )}
 
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            {error}
-          </div>
-        )}
+            {error && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+                {error}
+              </div>
+            )}
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-lg p-8">
+            <form onSubmit={handleSubmit} className="space-y-6">
           <div className="mb-6">
             <label className="block text-gray-700 font-semibold mb-2">
               Nom complet *
@@ -165,14 +272,56 @@ function ReserverForm() {
             </div>
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-primary-dark transition-colors disabled:opacity-50"
-          >
-            {loading ? 'Réservation en cours...' : 'Confirmer la réservation'}
-          </button>
-        </form>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-primary text-white py-4 rounded-lg font-semibold hover:bg-primary-dark transition-all hover:scale-105 disabled:opacity-50 disabled:hover:scale-100 text-lg shadow-lg"
+              >
+                {loading ? '⏳ Réservation en cours...' : '✓ Confirmer la réservation'}
+              </button>
+
+              <p className="text-sm text-gray-500 text-center mt-4">
+                En confirmant, vous acceptez nos conditions générales de vente
+              </p>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      {/* Section Pourquoi nous choisir */}
+      <div className="max-w-6xl mx-auto mt-16">
+        <h2 className="text-3xl font-bold text-center text-primary mb-12">
+          Pourquoi choisir Karibotel ?
+        </h2>
+        <div className="grid md:grid-cols-3 gap-8">
+          <div className="text-center">
+            <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-4xl">🌿</span>
+            </div>
+            <h3 className="text-xl font-bold mb-2">Écologique</h3>
+            <p className="text-gray-600">
+              Engagement fort pour le développement durable et l'environnement
+            </p>
+          </div>
+          <div className="text-center">
+            <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-4xl">🏞️</span>
+            </div>
+            <h3 className="text-xl font-bold mb-2">Vue Exceptionnelle</h3>
+            <p className="text-gray-600">
+              Panorama unique sur le village et la rivière de Ranomafana
+            </p>
+          </div>
+          <div className="text-center">
+            <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-4xl">⭐</span>
+            </div>
+            <h3 className="text-xl font-bold mb-2">Service Premium</h3>
+            <p className="text-gray-600">
+              Équipe dévouée pour rendre votre séjour inoubliable
+            </p>
+          </div>
+        </div>
       </div>
     </main>
   )
