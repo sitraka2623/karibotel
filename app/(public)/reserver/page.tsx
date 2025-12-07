@@ -31,7 +31,7 @@ function ReserverForm() {
   useEffect(() => {
     fetch('/api/chambres')
       .then((res) => res.json())
-      .then((data) => setChambres(data.filter((c: Chambre & { disponible: boolean }) => c.disponible)))
+      .then((data) => setChambres(data))
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -239,9 +239,13 @@ function ReserverForm() {
               {chambres.map((chambre) => (
                 <option key={chambre.id} value={chambre.id}>
                   Chambre {chambre.numero} - {chambre.prix.toLocaleString()} Ar/nuit
+                  {!chambre.disponible ? ' (Vérifier disponibilités)' : ''}
                 </option>
               ))}
             </select>
+            <p className="text-sm text-gray-500 mt-2">
+              💡 La disponibilité sera vérifiée automatiquement selon vos dates
+            </p>
           </div>
 
           <div className="grid sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
