@@ -47,6 +47,10 @@ export default function ReservationsPage() {
   const [showModal, setShowModal] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards')
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [reservationToDelete, setReservationToDelete] = useState<string | null>(null)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [successMessage, setSuccessMessage] = useState('')
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -73,20 +77,31 @@ export default function ReservationsPage() {
     }
   }
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer cette réservation ?')) return
+  const handleDelete = (id: string) => {
+    setReservationToDelete(id)
+    setShowDeleteModal(true)
+  }
+
+  const confirmDelete = async () => {
+    if (!reservationToDelete) return
 
     try {
-      const res = await fetch(`/api/reservations/${id}`, {
+      const res = await fetch(`/api/reservations/${reservationToDelete}`, {
         method: 'DELETE',
       })
 
       if (res.ok) {
         loadReservations()
-        alert('Réservation supprimée avec succès')
+        setShowDeleteModal(false)
+        setReservationToDelete(null)
+        setShowModal(false)
+        setSelectedReservation(null)
+        setSuccessMessage('Réservation supprimée avec succès')
+        setShowSuccessModal(true)
+        setTimeout(() => setShowSuccessModal(false), 3000)
       }
     } catch (error) {
-      alert('Erreur lors de la suppression')
+      console.error('Erreur:', error)
     }
   }
 
@@ -100,10 +115,12 @@ export default function ReservationsPage() {
 
       if (res.ok) {
         loadReservations()
-        alert('Statut mis à jour avec succès')
+        setSuccessMessage('Statut mis à jour avec succès')
+        setShowSuccessModal(true)
+        setTimeout(() => setShowSuccessModal(false), 3000)
       }
     } catch (error) {
-      alert('Erreur lors de la mise à jour')
+      console.error('Erreur:', error)
     }
   }
 
@@ -568,19 +585,64 @@ export default function ReservationsPage() {
                 Fermer
               </button>
               <button
-                onClick={() => {
-                  if (confirm('Voulez-vous supprimer cette réservation ?')) {
-                    handleDelete(selectedReservation.id)
-                    setShowModal(false)
-                    setSelectedReservation(null)
-                  }
-                }}
+                onClick={() => handleDelete(selectedReservation.id)}
                 className="px-8 bg-red-500 text-white py-4 rounded-xl font-bold hover:bg-red-600 transition-colors text-lg flex items-center gap-2"
               >
                 <FaTrash />
                 Supprimer
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Confirmation Suppression */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl">
+            <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <FaTrash className="text-4xl text-red-500" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-800 mb-2 text-center">
+              Confirmer la suppression
+            </h3>
+            <p className="text-gray-600 mb-6 text-center">
+              Êtes-vous sûr de vouloir supprimer cette réservation ? Cette action est irréversible.
+            </p>
+            <div className="flex gap-4">
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false)
+                  setReservationToDelete(null)
+                }}
+                className="flex-1 bg-gray-300 text-gray-800 px-6 py-3 rounded-lg font-semibold hover:bg-gray-400 transition-colors"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="flex-1 bg-red-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-600 transition-colors"
+              >
+                Supprimer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Succès */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-8 max-w-md w-full text-center shadow-2xl">
+            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-5xl">✓</span>
+            </div>
+            <h3 className="text-2xl font-bold text-gray-800 mb-2">
+              Succès !
+            </h3>
+            <p className="text-gray-600">
+              {successMessage}
+            </p>
           </div>
         </div>
       )}
